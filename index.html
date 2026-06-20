@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GD Easy Demon List & Leaderboard</title>
+    <style>
+        /* --- Переменные и обнуление стилей --- */
+        :root {
+            --bg-main: #0b0c10;
+            --bg-card: #1f2833;
+            --bg-dark: #050508;
+            --color-text-main: #c5c6c7;
+            --color-text-bright: #ffffff;
+            --color-accent: #4eb5f1;
+            --color-secondary: #66fcf1;
+            --color-points: #ff007f;
+            --color-success: #86c232;
+            --color-discord: #5865F2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--color-text-main);
+            background-image: radial-gradient(circle at 50% 50%, var(--bg-card) 0%, var(--bg-main) 100%);
+            background-attachment: fixed;
+            padding-bottom: 60px;
+        }
+
+        /* --- Шапка и Навигация --- */
+        header {
+            background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-main) 100%);
+            border-bottom: 4px solid var(--color-accent);
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(78, 181, 241, 0.15);
+        }
+
+        header h1 {
+            color: var(--color-accent);
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(78, 181, 241, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .tabs, .links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .tab-btn, .link-btn {
+            background: var(--bg-card);
+            color: var(--color-text-main);
+            border: 2px solid var(--color-accent);
+            padding: 10px 24px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.25s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .tab-btn:hover, 
+        .tab-btn.active {
+            background: var(--color-accent);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px rgba(78, 181, 241, 0.4);
+        }
+
+        .link-btn.btn-form {
+            border-color: var(--color-success);
+            color: var(--color-success);
+        }
+        .link-btn.btn-form:hover {
+            background: var(--color-success);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px rgba(134, 194, 50, 0.4);
+        }
+
+        .link-btn.btn-discord {
+            border-color: var(--color-discord);
+            color: var(--color-discord);
+        }
+        .link-btn.btn-discord:hover {
+            background: var(--color-discord);
+            color: var(--color-text-bright);
+            box-shadow: 0 0 15px rgba(88, 101, 242, 0.4);
+        }
+
+        /* --- Основной контейнер --- */
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .controls-panel {
+            background: rgba(31, 40, 51, 0.6);
+            border: 2px solid var(--color-accent);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(5px);
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--bg-main);
+            border: 1px solid var(--color-secondary);
+            border-radius: 6px;
+            padding: 12px 20px;
+            color: var(--color-text-bright);
+            font-size: 1rem;
+            outline: none;
+            transition: box-shadow 0.3s;
+        }
+
+        .search-input:focus {
+            box-shadow: 0 0 12px rgba(102, 252, 241, 0.4);
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* --- Карточки списков --- */
+        .list-card {
+            background: var(--bg-card);
+            border-left: 6px solid var(--color-accent);
+            border-radius: 6px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s, border-left-color 0.2s;
+            cursor: pointer;
+        }
+
+        .list-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(102, 252, 241, 0.15);
+            border-left-color: var(--color-secondary);
+        }
+
+        .card-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .card-rank {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--color-secondary);
+            min-width: 65px;
+            letter-spacing: -1px;
+        }
+
+        /* Стилизация новой кастомной иконки */
+        .demon-icon-img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .card-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .card-info h3 {
+            color: var(--color-text-bright);
+            font-size: 1.4rem;
+        }
+
+        .card-info p {
+            color: var(--color-success);
+            font-size: 0.9rem;
+        }
+
+        .card-info p span {
+            color: var(--color-text-main);
+        }
+
+        .card-right {
+            text-align: right;
+        }
+
+        .card-points {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--color-points);
+            text-shadow: 0 0 5px rgba(255, 0, 127, 0.2);
+        }
+
+        .card-subtext {
+            font-size: 0.85rem;
+            color: var(--color-secondary);
+            margin-top: 6px;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: var(--color-points);
+            font-size: 1.1rem;
+            background: var(--bg-card);
+            border-radius: 6px;
+        }
+
+        /* --- Модальное окно --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(6px);
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 3px solid var(--color-secondary);
+            border-radius: 12px;
+            max-width: 650px;
+            width: 93%;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(102, 252, 241, 0.3);
+            animation: modalFadeIn 0.25s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes modalFadeIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--color-text-bright);
+            font-size: 1.8rem;
+            cursor: pointer;
+            line-height: 1;
+            z-index: 10;
+        }
+
+        .close-btn:hover {
+            color: var(--color-points);
+        }
+
+        .modal h2 {
+            color: var(--color-secondary);
+            margin-bottom: 20px;
+            font-size: 2rem;
+            border-bottom: 2px solid var(--color-accent);
+            padding-bottom: 12px;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .modal-grid { grid-template-columns: 1fr; }
+        }
+
+        .modal-item {
+            background: var(--bg-dark);
+            padding: 12px 15px;
+            border-radius: 6px;
+            border-left: 3px solid var(--color-accent);
+        }
+
+        .modal-item label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--color-secondary);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .modal-item span {
+            font-size: 1.1rem;
+            color: var(--color-text-bright);
+            font-weight: bold;
+        }
+
+        /* Видео-контейнер YouTube */
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            border: 2px solid var(--color-accent);
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Блок таблицы прохождений уровня */
+        .records-section {
+            background: var(--bg-dark);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid var(--color-card);
+            margin-top: 15px;
+        }
+
+        .records-section h4 {
+            color: var(--color-secondary);
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(102, 252, 241, 0.2);
+            padding-bottom: 6px;
+        }
+
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .records-table th, .records-table td {
+            padding: 8px 12px;
+        }
+
+        .records-table th {
+            color: var(--color-accent);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--color-card);
+        }
+
+        .records-table tr:not(:last-child) td {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .records-table td.col-rank {
+            color: var(--color-secondary);
+            font-weight: bold;
+            width: 15%;
+        }
+
+        .records-table td.col-name {
+            color: var(--color-text-bright);
+        }
+
+        .records-table td.col-link {
+            text-align: right;
+        }
+
+        .records-table td.col-link a {
+            color: var(--color-points);
+            font-weight: bold;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .records-table td.col-link a:hover {
+            color: var(--color-secondary);
+            text-shadow: 0 0 8px rgba(102, 252, 241, 0.5);
+        }
+        
+        .no-records {
+            color: var(--color-text-main);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .flex-align {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>GD Easy Demon List</h1>
+        <div class="nav-container">
+            <div class="tabs">
+                <button id="tabBtnDemons" class="tab-btn active" onclick="switchTab('demons')">Уровни</button>
+                <button id="tabBtnPlayers" class="tab-btn" onclick="switchTab('players')">Топ Игроков</button>
+            </div>
+            <div class="links">
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSfiOqHY_Nu6cR0UA-9mo2hgalhOCdCmpfOv1Ras59LeO14Okg/viewform" target="_blank" class="link-btn btn-form">Заявка</a>
+                <a href="#" class="link-btn btn-discord" onclick="alert('Ссылка на Discord появится в ближайшее время!'); return false;">Дискорд</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="controls-panel">
+            <input type="text" id="searchInput" class="search-input" placeholder="Поиск уровня по названием или автору...">
+        </div>
+
+        <div id="demonsSection" class="content-section active">
+            <div id="demonList" class="list-container"></div>
+        </div>
+
+        <div id="playersSection" class="content-section">
+            <div id="playerList" class="list-container"></div>
+        </div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay" onclick="handleOverlayClick(event)">
+        <div class="modal">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h2 id="modalTitle">Информация</h2>
+            
+            <div id="modalGrid" class="modal-grid"></div>
+            
+            <div id="modalVideoWrapper"></div>
+
+            <div id="modalRecordsWrapper"></div>
+        </div>
+    </div>
+
+    <script>
+        /* --- Базы данных --- */
+        const DEMONS_DATA = [
+            { name: "DeadLine", author: "...", id: "...", points: 113, gddl: "1.13", video: "" },
+            { name: "Theory of Infinity", author: "...", id: "...", points: 113, gddl: "1.13", video: "" },
+            { name: "Neon Dynamics", author: "...", id: "...", points: 112, gddl: "1.12", video: "" },
+            { name: "Lightning world", author: "...", id: "...", points: 112, gddl: "1.12", video: "" },
+            { name: "XYZ step", author: "...", id: "...", points: 111, gddl: "1.11", video: "" },
+            { name: "demon mixed", author: "...", id: "...", points: 110, gddl: "1.10", video: "" },
+            { name: "funk spirit", author: "...", id: "...", points: 110, gddl: "1.10", video: "" },
+            { name: "seeker of demon", author: "...", id: "...", points: 109, gddl: "1.09", video: "" },
+            { name: "demon step", author: "...", id: "...", points: 109, gddl: "1.09", video: "" },
+            { name: "ice cave", author: "...", id: "...", points: 109, gddl: "1.09", video: "" },
+            { name: "noobaman adventures", author: "...", id: "...", points: 107, gddl: "1.07", video: "" },
+            { name: "The Lightning Road", author: "Timeless", id: "53147", points: 105, gddl: "1.05", video: "" },
+            { name: "The Nightmare", author: "Jax", id: "131481", points: 104, gddl: "1.04", video: "" }
+        ];
+
+        const PLAYERS_DATA = [
+            { 
+                name: "Nexus", 
+                completions: [
+                    { name: "The Nightmare", num: 1, link: "" }, 
+                    { name: "The Lightning Road", num: 1, link: "" }
+                ], 
+                country: "США", 
+                globalRank: "12" 
+            },
+            { 
+                name: "EVW", 
+                completions: [
+                    { name: "The Nightmare", num: 2, link: "" }
+                ], 
+                country: "США", 
+                globalRank: "45" 
+            },
+            { 
+                name: "Sikky", 
+                completions: [
+                    { name: "The Lightning Road", num: 3, link: "" }
+                ], 
+                country: "Великобритания", 
+                globalRank: "112" 
+            },
+            { 
+                name: "Nikobor", 
+                completions: [
+                    { name: "The Lightning Road", num: 2, link: "" }
+                ], 
+                country: "Россия", 
+                globalRank: "77" 
+            },
+            { 
+                name: "DemonHunter", 
+                completions: [],
+                country: "Германия", 
+                globalRank: "512" 
+            }
+        ];
+
+        /* --- Состояние приложения --- */
+        let activeTab = 'demons';
+        const searchInput = document.getElementById('searchInput');
+
+        /* --- Функция вычисления кастомной иконки по рангу --- */
+        function getDemonIcon(rank, totalCount) {
+            // 1. Топ 50 демонов получают demon.png
+            if (rank <= 10) return "images/normal_demon.png";
+            if (10 < rank && rank <= 50) return "images/demon.png";
+            
+            // 2. Пять самых лёгких в конце списка получают auto.png
+            if (rank > totalCount - 5) return "images/auto.png";
+
+            // Вычисляем позицию с конца (исключая последние 5) для остальных категорий
+            let remainingFromEnd = totalCount - 5 - rank;
+
+            // 3. Следующие 95 демонов снизу вверх
+            if (remainingFromEnd < 95) return "images/easy.png";
+            remainingFromEnd -= 95;
+
+            // 4. Следующие 200 демонов снизу вверх
+            if (remainingFromEnd < 200) return "images/normal.png";
+            remainingFromEnd -= 200;
+
+            // 5. Следующие 450 демонов снизу вверх
+            if (remainingFromEnd < 450) return "images/hard.png";
+            remainingFromEnd -= 450;
+
+            // 6. Следующие 1000 демонов снизу вверх
+            if (remainingFromEnd < 1000) return "images/harder.png";
+
+            // 7. Всё, что осталось между топ-50 и блоком harder
+            return "images/insane.png";
+        }
+
+        /* --- Вспомогательные функции расчетов --- */
+        
+        function getPlayerTotalPoints(playerCompletions) {
+            let total = 0;
+            playerCompletions.forEach(completion => {
+                const demon = DEMONS_DATA.find(d => d.name === completion.name);
+                if (demon) {
+                    total += demon.points;
+                }
+            });
+            return total;
+        }
+
+        function getCompletersForDemon(demonName) {
+            let completers = [];
+            PLAYERS_DATA.forEach(player => {
+                const completion = player.completions.find(c => c.name === demonName);
+                if (completion) {
+                    completers.push({
+                        name: player.name,
+                        num: completion.num,
+                        link: completion.link || ""
+                    });
+                }
+            });
+            
+            completers.sort((a, b) => a.num - b.num);
+            return completers;
+        }
+
+        /* --- Управление вкладками интерфейса --- */
+
+        function switchTab(tabName) {
+            if (activeTab === tabName) return;
+            activeTab = tabName;
+
+            document.getElementById('tabBtnDemons').classList.toggle('active', tabName === 'demons');
+            document.getElementById('tabBtnPlayers').classList.toggle('active', tabName === 'players');
+
+            document.getElementById('demonsSection').classList.toggle('active', tabName === 'demons');
+            document.getElementById('playersSection').classList.toggle('active', tabName === 'players');
+
+            searchInput.value = '';
+            searchInput.placeholder = tabName === 'demons' 
+                ? "Поиск уровня по названию или автору..." 
+                : "Поиск игрока по никнейму...";
+
+            render();
+        }
+
+        function render(filterValue = '') {
+            const query = filterValue.trim().toLowerCase();
+            if (activeTab === 'demons') {
+                renderDemonsList(query);
+            } else {
+                renderPlayersList(query);
+            }
+        }
+
+        /* --- Рендеринг списков --- */
+
+        function renderDemonsList(query) {
+            const container = document.getElementById('demonList');
+            container.innerHTML = '';
+
+            const mappedDemons = DEMONS_DATA.map((demon, index) => ({
+                ...demon,
+                calculatedRank: index + 1
+            }));
+
+            const filteredDemons = mappedDemons.filter(demon => 
+                demon.name.toLowerCase().includes(query) || 
+                demon.author.toLowerCase().includes(query)
+            );
+
+            if (filteredDemons.length === 0) {
+                container.innerHTML = `<div class="empty-message">Демоны по вашему запросу не найдены</div>`;
+                return;
+            }
+
+            filteredDemons.forEach(demon => {
+                const card = document.createElement('div');
+                card.className = 'list-card';
+                card.addEventListener('click', () => openDemonModal(demon));
+
+                // Получаем путь к кастомной иконке на основе ранга
+                const iconPath = getDemonIcon(demon.calculatedRank, DEMONS_DATA.length);
+
+                card.innerHTML = `
+                    <div class="card-left">
+                        <div class="card-rank">#${demon.calculatedRank}</div>
+                        <div class="card-info">
+                            <div class="card-title-wrapper">
+                                <img src="${iconPath}" alt="Difficulty" class="demon-icon-img">
+                                <h3>${demon.name}</h3>
+                            </div>
+                            <p>Автор: <span>${demon.author}</span></p>
+                        </div>
+                    </div>
+                    <div class="card-right">
+                        <div class="card-points">${demon.points} PTS</div>
+                        <div class="card-subtext">Тир ${demon.gddl}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderPlayersList(query) {
+            const container = document.getElementById('playerList');
+            container.innerHTML = '';
+
+            const mappedPlayers = PLAYERS_DATA.map(player => ({
+                ...player,
+                totalPoints: getPlayerTotalPoints(player.completions)
+            }));
+
+            mappedPlayers.sort((a, b) => b.totalPoints - a.totalPoints);
+
+            const rankedPlayers = mappedPlayers.map((player, index) => ({
+                ...player,
+                calculatedRank: index + 1
+            }));
+
+            const filteredPlayers = rankedPlayers.filter(player => 
+                player.name.toLowerCase().includes(query)
+            );
+
+            if (filteredPlayers.length === 0) {
+                container.innerHTML = `<div class="empty-message">Игроки по вашему запросу не найдены</div>`;
+                return;
+            }
+
+            filteredPlayers.forEach(player => {
+                const card = document.createElement('div');
+                card.className = 'list-card';
+                card.addEventListener('click', () => openPlayerModal(player));
+
+                card.innerHTML = `
+                    <div class="card-left">
+                        <div class="card-rank">#${player.calculatedRank}</div>
+                        <div class="card-icon">👤</div>
+                        <div class="card-info">
+                            <h3>${player.name}</h3>
+                            <p>Пройдено из топа: <span>${player.completions.length} / ${DEMONS_DATA.length}</span></p>
+                        </div>
+                    </div>
+                    <div class="card-right">
+                        <div class="card-points">${player.totalPoints} PTS</div>
+                        <div class="card-subtext">${player.country}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        /* --- Логика Модального Окна --- */
+
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalGrid = document.getElementById('modalGrid');
+        const videoWrapper = document.getElementById('modalVideoWrapper');
+        const recordsWrapper = document.getElementById('modalRecordsWrapper');
+
+        function openDemonModal(demon) {
+            modalTitle.innerText = demon.name;
+            
+            modalGrid.innerHTML = `
+                <div class="modal-item"><label>Автор</label><span>${demon.author}</span></div>
+                <div class="modal-item"><label>Очки</label><span>${demon.points} PTS</span></div>
+                <div class="modal-item"><label>ID</label><span>${demon.id}</span></div>
+                <div class="modal-item"><label>GDDL Тир</label><span>${demon.gddl}</span></div>
+            `;
+
+            if (demon.video) {
+                videoWrapper.innerHTML = `
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/${demon.video}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                `;
+            } else {
+                videoWrapper.innerHTML = '';
+            }
+
+            const completers = getCompletersForDemon(demon.name);
+            let recordsHTML = `
+                <div class="records-section">
+                    <h4>Пройдено игроками:</h4>
+            `;
+
+            if (completers.length > 0) {
+                recordsHTML += `
+                    <table class="records-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Ник</th>
+                                <th style="text-align: right;">Ссылка</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                completers.forEach((completer) => {
+                    const linkCell = completer.link 
+                        ? `<a href="${completer.link}" target="_blank" rel="noopener noreferrer">Link</a>` 
+                        : `—`;
+
+                    recordsHTML += `
+                        <tr>
+                            <td class="col-rank">#${completer.num}</td>
+                            <td class="col-name">${completer.name}</td>
+                            <td class="col-link">${linkCell}</td>
+                        </tr>
+                    `;
+                });
+                recordsHTML += `</tbody></table>`;
+            } else {
+                recordsHTML += `<p class="no-records">Этот уровень пока никто не прошел.</p>`;
+            }
+
+            recordsHTML += `</div>`;
+            recordsWrapper.innerHTML = recordsHTML;
+
+            modalOverlay.style.display = 'flex';
+        }
+
+        function openPlayerModal(player) {
+            modalTitle.innerText = player.name;
+            videoWrapper.innerHTML = ''; 
+            
+            modalGrid.innerHTML = `
+                <div class="modal-item"><label>Место в рейтинге</label><span>#${player.calculatedRank}</span></div>
+                <div class="modal-item"><label>Страна</label><span>${player.country}</span></div>
+                <div class="modal-item"><label>Очки топа</label><span>${player.totalPoints} PTS</span></div>
+                <div class="modal-item"><label>Глобальный ранг в GD</label><span>#${player.globalRank}</span></div>
+            `;
+
+            let recordsHTML = `
+                <div class="records-section">
+                    <h4>Список пройденных демонов:</h4>
+            `;
+
+            if (player.completions.length > 0) {
+                recordsHTML += `
+                    <table class="records-table">
+                        <thead>
+                            <tr>
+                                <th>Название уровня</th>
+                                <th>Автор</th>
+                                <th style="text-align: right;">Очки</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                player.completions.forEach(completion => {
+                    const demonIndex = DEMONS_DATA.findIndex(d => d.name === completion.name);
+                    if (demonIndex !== -1) {
+                        const demon = DEMONS_DATA[demonIndex];
+                        const iconPath = getDemonIcon(demonIndex + 1, DEMONS_DATA.length);
+
+                        recordsHTML += `
+                            <tr>
+                                <td class="col-name" style="font-weight: bold; color: var(--color-secondary);">
+                                    <div class="flex-align">
+                                        <img src="${iconPath}" alt="" style="width: 20px; height: 20px; object-fit: contain;">
+                                        <span>${demon.name}</span>
+                                        <span style="color: var(--color-accent); font-size: 0.85rem; font-weight: normal; margin-left: 5px;">(Прохождение #${completion.num})</span>
+                                    </div>
+                                </td>
+                                <td class="col-name" style="color: var(--color-text-main);">${demon.author}</td>
+                                <td class="col-pts" style="color: var(--color-points); font-weight: bold; text-align: right;">${demon.points} PTS</td>
+                            </tr>
+                        `;
+                    }
+                });
+                recordsHTML += `</tbody></table>`;
+            } else {
+                recordsHTML += `<p class="no-records">У этого игрока пока нет пройденных уровней из топа.</p>`;
+            }
+
+            recordsHTML += `</div>`;
+            recordsWrapper.innerHTML = recordsHTML;
+
+            modalOverlay.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modalOverlay.style.display = 'none';
+            videoWrapper.innerHTML = ''; 
+        }
+
+        function handleOverlayClick(event) {
+            if (event.target === modalOverlay) {
+                closeModal();
+            }
+        }
+
+        searchInput.addEventListener('input', (event) => {
+            render(event.target.value);
+        });
+
+        render();
+    </script>
+</body>
+</html>
